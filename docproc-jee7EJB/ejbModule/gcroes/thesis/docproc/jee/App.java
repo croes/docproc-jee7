@@ -1,9 +1,10 @@
 package gcroes.thesis.docproc.jee;
 
+import static gcroes.thesis.docproc.jee.config.Config.cfg;
+
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import static gcroes.thesis.docproc.jee.config.Config.cfg;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

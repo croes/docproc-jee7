@@ -73,6 +73,9 @@ public class Job implements Serializable {
 
     @OneToMany(mappedBy = "job")
     private List<Task> tasks;
+    
+    @OneToMany(mappedBy = "job")
+    private List<Join> joins;
 
     public Job() {
     }
@@ -89,6 +92,7 @@ public class Job implements Serializable {
         this.workflowName = workflowName;
         this.startTask = null;
         this.tasks = new ArrayList<Task>();
+        this.joins = new ArrayList<Join>();
     }
 
     public int getJobId() {
@@ -237,5 +241,13 @@ public class Job implements Serializable {
     public WorkflowConfig getWorkflowConfig(){
         return Config.getConfig().getWorkflow(workflowName);
     }
+
+	public void addJoin(Join join) {
+		joins.add(join);
+	}
+	
+	public void removeJoin(Join join){
+		joins.remove(join);
+	}
 
 }

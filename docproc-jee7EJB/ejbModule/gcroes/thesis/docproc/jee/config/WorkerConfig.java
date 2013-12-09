@@ -62,7 +62,7 @@ public class WorkerConfig {
                 }
                 
                 this.urlLoader = new URLClassLoader(new URL[]{jarFile.toURI().toURL()}, 
-                    gcroes.thesis.docproc.jee.Worker.class.getClassLoader());
+                    gcroes.thesis.docproc.jee.worker.Worker.class.getClassLoader());
             } catch(IOException e) {
                 logger.log(Level.SEVERE, "Bad url for worker code path", e);
             }
@@ -104,11 +104,11 @@ public class WorkerConfig {
      * @return An instance of the worker class
      */
     @SuppressWarnings("unchecked")
-    public gcroes.thesis.docproc.jee.Worker getWorkerInstance() {
+    public gcroes.thesis.docproc.jee.worker.Worker getWorkerInstance() {
         try {
-            Class<gcroes.thesis.docproc.jee.Worker> workerCls = (Class<gcroes.thesis.docproc.jee.Worker>)getLoader().loadClass(this.getWorkerClass());
+            Class<gcroes.thesis.docproc.jee.worker.Worker> workerCls = (Class<gcroes.thesis.docproc.jee.worker.Worker>)getLoader().loadClass(this.getWorkerClass());
             //Class<drm.taskworker.Worker> workerCls = (Class<drm.taskworker.Worker>)Class.forName(this.getWorkerClass());
-            Constructor<gcroes.thesis.docproc.jee.Worker> workerCtor = workerCls.getConstructor(String.class);
+            Constructor<gcroes.thesis.docproc.jee.worker.Worker> workerCtor = workerCls.getConstructor(String.class);
             return workerCtor.newInstance(this.getWorkerName());
         } catch (ClassNotFoundException e) {
             logger.severe("Unable to load class " + this.getWorkerClass() + " for worker " + this.getWorkerName());

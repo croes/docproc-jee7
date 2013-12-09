@@ -9,9 +9,11 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.XmlTransient;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The persistent class for the task database table.
@@ -27,7 +29,7 @@ public class Task implements Serializable {
 	 */
 	private static final long serialVersionUID = 8377642051361748432L;
 
-	private static final String JOIN_PARAM = ".meta.join";
+	public static final String JOIN_PARAM = ".meta.join";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -150,6 +152,17 @@ public class Task implements Serializable {
 		// TODO Auto-generated method stub
 
 	}
+	
+	public void markSplit(Join join){
+		@SuppressWarnings("unchecked")
+		ArrayList<Join> joinList = (ArrayList<Join>) getParamValue(JOIN_PARAM);
+		joinList.add(join);
+		putParam(JOIN_PARAM, joinList);
+	}
+
+	public void initJoin() {
+		this.putParam(JOIN_PARAM, new ArrayList<Join>());
+	}
 
 	/**
 	 * Remove a parameter from the parameter map
@@ -188,8 +201,12 @@ public class Task implements Serializable {
 		return null;
 	}
 
-	public void initJoin() {
-		this.putParam(JOIN_PARAM, "");
+	public String getNextWorkerName(){
+		return job.getWorkflowConfig().getNextStep(workerName, "next");
+	}
+
+	public Set<String> getParamNames() {
+		return params.keySet();
 	}
 
 }
