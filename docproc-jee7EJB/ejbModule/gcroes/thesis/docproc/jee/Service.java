@@ -3,11 +3,13 @@ package gcroes.thesis.docproc.jee;
 import gcroes.thesis.docproc.jee.entity.Job;
 import gcroes.thesis.docproc.jee.entity.Task;
 import gcroes.thesis.docproc.jee.worker.CsvToTaskWorker;
+import gcroes.thesis.docproc.jee.worker.EndWorker;
 import gcroes.thesis.docproc.jee.worker.JoinWorker;
 import gcroes.thesis.docproc.jee.worker.TemplateWorker;
 import gcroes.thesis.docproc.jee.worker.Worker;
 import gcroes.thesis.docproc.jee.worker.XslFoRenderWorker;
 import gcroes.thesis.docproc.jee.worker.ZipWorker;
+
 
 
 

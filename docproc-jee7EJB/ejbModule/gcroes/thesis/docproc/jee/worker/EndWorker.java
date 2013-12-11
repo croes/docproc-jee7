@@ -1,8 +1,7 @@
-package gcroes.thesis.docproc.jee;
+package gcroes.thesis.docproc.jee.worker;
 
 import gcroes.thesis.docproc.jee.entity.Task;
 import gcroes.thesis.docproc.jee.tasks.TaskResult;
-import gcroes.thesis.docproc.jee.worker.Worker;
 
 public class EndWorker extends Worker {
 
