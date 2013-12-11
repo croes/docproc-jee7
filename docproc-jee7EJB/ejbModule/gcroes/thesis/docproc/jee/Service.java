@@ -2,18 +2,21 @@ package gcroes.thesis.docproc.jee;
 
 import gcroes.thesis.docproc.jee.entity.Job;
 import gcroes.thesis.docproc.jee.entity.Task;
-
 import gcroes.thesis.docproc.jee.worker.CsvToTaskWorker;
 import gcroes.thesis.docproc.jee.worker.JoinWorker;
 import gcroes.thesis.docproc.jee.worker.TemplateWorker;
 import gcroes.thesis.docproc.jee.worker.Worker;
-
 import gcroes.thesis.docproc.jee.worker.XslFoRenderWorker;
-
 import gcroes.thesis.docproc.jee.worker.ZipWorker;
+
+
+
+
+
 
 //import gcroes.thesis.docproc.jee.schedule.WeightedRoundRobin;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +27,12 @@ import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.jws.WebService;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
+import org.apache.fop.apps.FopFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,7 +166,14 @@ public class Service implements ServiceRemote, Serializable {
 	}
 
 	public void queueTask(Task task) {
-		logger.debug("queueTask()");
+		try {
+			Worker worker = workerForTask(task);
+			mses.schedule(worker, 5, TimeUnit.SECONDS);
+			em.merge(task.getJob());
+		} catch (WorkerNotFoundException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	private Worker workerForTask(Task task) throws WorkerNotFoundException {

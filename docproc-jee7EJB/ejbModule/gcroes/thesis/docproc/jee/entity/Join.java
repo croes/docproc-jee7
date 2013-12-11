@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -19,7 +20,7 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name="join")
+@Table(name="task_join")
 public class Join implements Serializable {
 
 	   
@@ -29,9 +30,11 @@ public class Join implements Serializable {
 	private static final long serialVersionUID = 218260316362193525L;
 
 	@Id
+	@Column(name="id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
 	
+	@ManyToOne
 	@JoinColumn(name="job_id")
 	private Job job;
 	
@@ -51,6 +54,7 @@ public class Join implements Serializable {
 
 	public Join(int n_tasks) {
 		super();
+		this.job = null;
 		this.n_tasks = n_tasks;
 		this.parents = new ArrayList<Task>();
 	}   
@@ -77,7 +81,7 @@ public class Join implements Serializable {
 	}
 	
 	public void decrementJoin(){
-		this.n_tasks--;
+		this.n_tasks = this.n_tasks - 1;
 	}
 	
 	public void addParent(Task parentTask){

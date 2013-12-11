@@ -1,6 +1,7 @@
 package gcroes.thesis.docproc.jee;
 
 import gcroes.thesis.docproc.jee.entity.Job;
+import gcroes.thesis.docproc.jee.entity.Task;
 
 import java.util.List;
 
@@ -20,5 +21,11 @@ public interface ServiceRemote {
     public Job findJobByID(int id);
     
     public void testScheduleWorker();
+
+	public void queueTask(Task task);
+
+	public String getNextWorker(int workflowId, String workerName);
+	
+	public void jobFinished(Job job);
     
 }

@@ -11,6 +11,9 @@ import java.io.Serializable;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +30,9 @@ import java.util.List;
         @NamedQuery(name = "Job.findByID", query = "SELECT j FROM Job j WHERE j.jobId = :id") })
 @XmlRootElement
 public class Job implements Serializable {
+	
+	private static Logger logger = LogManager
+			.getLogger(Task.class.getName());
 
     /**
 	 * 
@@ -67,14 +73,15 @@ public class Job implements Serializable {
     @Column(name = "workflow_name")
     private String workflowName;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "start_task_id")
     private Task startTask;
 
-    @OneToMany(mappedBy = "job")
+    @OneToMany(mappedBy = "job", cascade=CascadeType.ALL)
     private List<Task> tasks;
     
-    @OneToMany(mappedBy = "job")
+    @OneToMany(cascade=CascadeType.ALL)
+    @JoinColumn(name = "job_id")
     private List<Join> joins;
 
     public Job() {
@@ -243,7 +250,9 @@ public class Job implements Serializable {
     }
 
 	public void addJoin(Join join) {
+		logger.info("Adding join for " + join.getN_tasks() + " tasks." );
 		joins.add(join);
+		join.setJob(this);
 	}
 	
 	public void removeJoin(Join join){

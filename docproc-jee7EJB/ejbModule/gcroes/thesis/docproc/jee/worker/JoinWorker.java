@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
  * @author Bart Vanbrabant <bart.vanbrabant@cs.kuleuven.be>
  */
 public class JoinWorker extends Worker {
-	private static final Logger logger = LogManager.getLogger(App.class
+	private static final Logger logger = LogManager.getLogger(JoinWorker.class
 			.getClass().getName());
 
 	/**
@@ -42,23 +42,29 @@ public class JoinWorker extends Worker {
 	public TaskResult work() {
 		TaskResult result = new TaskResult();
 
-		// get the last join id from the queue (String)
 		@SuppressWarnings("unchecked")
 		ArrayList<Join> joinQueue = (ArrayList<Join>) task
 				.getParamValue(Task.JOIN_PARAM);
-
-		Join join = joinQueue.remove(joinQueue.size() - 1);
+		
+		Join join = null; 
+		if(!joinQueue.isEmpty()){
+			join = joinQueue.remove(joinQueue.size() - 1);
+		}else{ 
+			logger.info("empty joinqueue");
+		}
 
 		// decrement the join counter
 		// Job.decrementJoin(task.getJobId(), joinId);
-		int joinValue;
-		synchronized (join) {
-			join.decrementJoin();
-			joinValue = join.getN_tasks();
+		int joinValue = -1;
+		if(join != null){
+			synchronized (join) {
+				join.decrementJoin();
+				joinValue = join.getN_tasks();
+				logger.debug("Decremented join [" + join + "] - new value: " + joinValue);
+			}
+			// register this task as a parent of the future joined task
+			join.addParent(task);
 		}
-
-		// register this task as a parent of the future joined task
-		join.addParent(task);
 
 		// if the joinValue is zero, we need to "materialize" the join task
 		// WARNING: creating this task has to be idempotent because

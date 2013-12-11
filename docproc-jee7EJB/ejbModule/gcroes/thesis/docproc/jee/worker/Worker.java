@@ -21,15 +21,14 @@ package gcroes.thesis.docproc.jee.worker;
 
 import java.util.List;
 
-import javax.ejb.EJB;
+import javax.naming.InitialContext;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.codahale.metrics.Timer.Context;
 
-import gcroes.thesis.docproc.jee.App;
-import gcroes.thesis.docproc.jee.Service;
+import gcroes.thesis.docproc.jee.ServiceRemote;
 import gcroes.thesis.docproc.jee.monitoring.Metrics;
 import gcroes.thesis.docproc.jee.entity.Join;
 import gcroes.thesis.docproc.jee.entity.Task;
@@ -44,11 +43,10 @@ import gcroes.thesis.docproc.jee.tasks.TaskResult.Result;
  * @author Bart Vanbrabant <bart.vanbrabant@cs.kuleuven.be>
  */
 public abstract class Worker implements Runnable {
-	private static final Logger logger = LogManager.getLogger(App.class
+	private static final Logger logger = LogManager.getLogger(Worker.class
             .getClass().getName());
-
-	@EJB
-	Service service;
+	
+	ServiceRemote service = null;
 	
 	protected Task task;
 
@@ -115,29 +113,30 @@ public abstract class Worker implements Runnable {
 
 				// process the result
 				if (result.getResult() == TaskResult.Result.FINISHED) {
-					//service.jobFinished(task.getJob());
+					service.jobFinished(task.getJob());
 
 				} else if (result.getResult() == TaskResult.Result.SUCCESS) {
 					trace("DONE", task);
+					InitialContext ctx = new InitialContext();
+					service = (ServiceRemote)ctx.lookup("java:global/docproc-jee7/docproc-jee7EJB/Service");
 					if(service == null)
-						logger.info("SERVICE NULL, DAMMIT!");
+						logger.info("Service lookup failed");
 					List<Task> tasks = result.getNextTasks();
 					// is this is a split, do the split
 					if (tasks.size() > 1) {
-						// allocate a new uuid that will become the
-						// taskid of the joined task
+						logger.info("MAKING NEW JOIN");
 						Join join = new Join(tasks.size());
 						task.getJob().addJoin(join);
 						for (Task newTask : tasks) {
-							 newTask.markSplit(join);
-							//service.queueTask(newTask);
+							newTask.markSplit(join);
+							service.queueTask(newTask);
 							trace("NEW", newTask);
 						}
 					} else if (tasks.size() == 1) {
-						logger.debug("should be queueing task now. service cannot be injected though.");
-						//service.queueTask(tasks.get(0));
+						service.queueTask(tasks.get(0));
+						
 					} else {
-						logger.debug("No next task to queue");
+						logger.info("No next task to queue");
 						// do nothing
 					}
 					//service.deleteTask(task);
@@ -160,6 +159,7 @@ public abstract class Worker implements Runnable {
 				tc.stop();
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.warn(this.task.getWorkerName() + " failed", e);
 		}
 	}

@@ -1,12 +1,18 @@
 package gcroes.thesis.docproc.jee.worker;
 
+import gcroes.thesis.docproc.jee.entity.Join;
 import gcroes.thesis.docproc.jee.entity.Task;
 import gcroes.thesis.docproc.jee.tasks.TaskResult;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -19,6 +25,8 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
  * @author Bart Vanbrabant <bart.vanbrabant@cs.kuleuven.be>
  */
 public class TemplateWorker extends Worker {
+	private static final Logger logger = LogManager.getLogger(TemplateWorker.class
+			.getClass().getName());
 	
 	public TemplateWorker(Task task) {
 		super(task);
@@ -29,6 +37,11 @@ public class TemplateWorker extends Worker {
 		TaskResult result = new TaskResult();
 
 		try {
+			
+			ArrayList<Join> joinList = (ArrayList<Join>) task.getParamValue(Task.JOIN_PARAM);
+			logger.debug("joinList empty on entry templateworker: " + joinList.isEmpty());
+			logger.debug("joinlist size: " + joinList.size() );
+			
 			VelocityEngine ve = new VelocityEngine();
 			ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
 			ve.setProperty("classpath.resource.loader.class",
@@ -36,13 +49,8 @@ public class TemplateWorker extends Worker {
 			ve.setProperty("runtime.log.logsystem.class",
 					"org.apache.velocity.runtime.log.NullLogSystem");
 			ve.init();
-
+ 
 			final String templatePath = "invoice-template.xsl";
-			InputStream input = this.getClass().getClassLoader()
-					.getResourceAsStream(templatePath);
-			if (input == null) {
-				throw new IOException("Template file doesn't exist");
-			}
 
 			VelocityContext context = new VelocityContext();
 
@@ -59,9 +67,13 @@ public class TemplateWorker extends Worker {
 			Task newTask = new Task(task.getJob(), task, this.task.getNextWorkerName());
 			newTask.putParam("arg0", writer.toString());
 			result.addNextTask(newTask);
-
+			
+			ArrayList<Join> joinList1 = (ArrayList<Join>) newTask.getParamValue(Task.JOIN_PARAM);
+			logger.debug("joinList empty on new xsl-fo-render task right after creation: " + joinList1.isEmpty());
+			
 			result.setResult(TaskResult.Result.SUCCESS);
 			writer.close();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
